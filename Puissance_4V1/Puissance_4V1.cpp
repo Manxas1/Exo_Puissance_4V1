@@ -4,7 +4,7 @@
 //-------------------
 //Fonction affichage
 //-------------------
-void lirePlateau(int tab[6][7])
+void afficherPlateau(int tab[6][7])
 {
 	system("cls");
 	printf("Voici le plateau: \n");
@@ -28,7 +28,6 @@ void lirePlateau(int tab[6][7])
 
 
 }
-
 //-------------------
 //fonctions lecture
 //-------------------
@@ -38,28 +37,19 @@ int lireColonne()
 	do {
 		printf("Quelle colonne? (1-7)\n");
 
-		if (scanf_s("%d", &colonne) != 1)
+		if (scanf_s("%d", &colonne) != 1 || colonne > 7 || colonne < 1)
 		{
 			printf("ce nombre est ou incorrect veuillez choisir un nombre entre 1 et 7\n");
 			while ((getchar()) != '\n');
-			continue;
 		}
-
-		if (colonne > 7 || colonne < 1)
-		{
-			printf("Nombre hors limite, recommencez.\n");
-			while ((getchar()) != '\n');
-		}
-
 	} while (colonne > 7 || colonne < 1);
 	while ((getchar()) != '\n');
 	return colonne - 1;
 }
-
 //------------------------------
 //Placement du pion
 //------------------------------
-int placerPion(int plateau[6][7], int colonne, int joueur)
+int placementPion(int plateau[6][7], int colonne, int joueur)
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -77,10 +67,11 @@ int placerPion(int plateau[6][7], int colonne, int joueur)
 int isPuissance4(int plateau[6][7])
 {
 	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 7; j++) {
-
+		for (int j = 0; j < 7; j++)
+		{
 			int joueur = plateau[i][j];
-			if (joueur == 0) continue;
+			if (joueur == 0) 
+				continue;
 
 			// Horizontal 
 			if (j <= 3 &&
@@ -97,7 +88,7 @@ int isPuissance4(int plateau[6][7])
 				return joueur;
 
 			// Diagonales 
-			if (i <= 2 && j <= 3 &&
+			if (i <= 2 && j <=3 &&
 				plateau[i + 1][j + 1] == joueur &&
 				plateau[i + 2][j + 2] == joueur &&
 				plateau[i + 3][j + 3] == joueur)
@@ -112,11 +103,9 @@ int isPuissance4(int plateau[6][7])
 	}	
 	return 0; 
 }
-
 //--------------------------------
 //Match nul? 
 //--------------------------------
-
 int plateauPlein(int plateau[6][7])
 {
 	for (int j = 0; j < 7; j++)
@@ -125,7 +114,34 @@ int plateauPlein(int plateau[6][7])
 
 	return 1;
 }
+//--------------------------------
+//Sous algorithme joueur 
+//--------------------------------
 
+int tourJoueur(int plateau[6][7], int joueur)
+{
+	int colonne;
+	int pionPlace;
+	printf("Place au joueur %d !\n", joueur);
+	do
+	{
+		colonne = lireColonne();
+		pionPlace = placementPion(plateau, colonne, joueur);
+
+		if (pionPlace == 0)
+			printf("Il n'y a plus de place! recommencez.\n");
+
+	} while (pionPlace == 0);
+
+	afficherPlateau(plateau);
+
+	if (isPuissance4(plateau) == joueur)
+		return joueur;
+	if (plateauPlein(plateau) == 1)
+		return -1;
+
+	return 0; 
+}
 //--------------------------------
 //Algorithme principal
 //--------------------------------
@@ -136,62 +152,27 @@ int main()
 	setlocale(LC_ALL, ".UTF-8");
 	int plateau[6][7] = { 0 };
 	int victoire = 0;
-	int colonne = 0;
-	int isPionPlace;
-	lirePlateau(plateau);
+	int joueur = 1;
+	afficherPlateau(plateau);
 
 	printf("Bienvenue dans puissance 4!, selectionnez une colonne pour jouer.\n");
-	while (victoire == 0)
+	do 
 	{
-		//-------------------------------
-		// Joueur 1
-		//-------------------------------
-		printf("Place au joueur 1(rouge)!\n");
+		victoire = tourJoueur(plateau, joueur);
 
-		do
-		{
-			colonne = lireColonne();
-			isPionPlace = placerPion(plateau, colonne, 1);
+		if (joueur == 1)
+			joueur = 2;
+		else
+			joueur = 1;
 
-			if (isPionPlace == 0)
-				printf("Il n'y a plus de place! recommencez.\n");
-		} while (isPionPlace == 0);
+	} while (victoire == 0);
 
-		lirePlateau(plateau);
-		if ((victoire = isPuissance4(plateau)) == 1)
-			continue;
-		if (plateauPlein(plateau) == 1)
-		{
-			printf("Match nul !Appuyez entrée pour quitter...\n");
-			return 0;
-		}
+	if (victoire == -1)
+		printf("Match Nul! appuyez entrée pour quitter..\n");
+	else
+		printf("Bien joué joueur %d! appuyez entrée pour quitter..\n", victoire);
 
-		//------------------------------
-		//Joueur 2
-		//------------------------------
-		printf("Place au joueur 2!(bleu)\n");
-
-		do
-		{
-			colonne = lireColonne();
-			isPionPlace = placerPion(plateau, colonne, 2);
-
-			if (isPionPlace == 0)
-				printf("Il n'y a plus de place! recommencez.\n");
-		} while (isPionPlace == 0);
-
-		lirePlateau(plateau);
-		if ((victoire = isPuissance4(plateau)) == 1)
-			continue;
-		if (plateauPlein(plateau) == 1)
-		{
-			printf("Match nul !Appuyez entrée pour quitter...\n");
-			return 0;
-		}
-	}
-	printf("Bien joué joueur %d! appuyez entrée pour quitter..\n", victoire);
-	getchar();
+	(void)getchar();
 	return 0;
 
 }
-
